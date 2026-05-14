@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📧 Spam Classification — RNN Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f5ef;
+    --surface: #ffffff;
+    --surface2: #f0ede4;
+    --border: #e2ddd3;
+    --text: #1a1814;
+    --text-muted: #6b6760;
+    --text-faint: #9e9b95;
+    --accent: #2d4a3e;
+    --accent-light: #e8f0ec;
+    --accent2: #7c3f1e;
+    --accent2-light: #f5ece6;
+    --warn: #7c5a1e;
+    --warn-light: #fdf4e3;
+    --info: #1e3d5c;
+    --info-light: #e8f0f7;
+    --tag-bg: #e8f0ec;
+    --tag-text: #2d4a3e;
+    --code-bg: #f0ede4;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 64px 24px 56px;
+    text-align: center;
+  }
+  .hero-icon {
+    font-size: 52px;
+    line-height: 1;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .hero h1 em {
+    color: var(--accent);
+    font-style: italic;
+  }
+  .hero-sub {
+    color: var(--text-muted);
+    font-size: 18px;
+    font-weight: 300;
+    margin-bottom: 32px;
+  }
+  .hero-badges {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 100px;
+    letter-spacing: 0.03em;
+  }
+  .badge.green { background: var(--accent-light); color: var(--accent); border-color: #c2d8cc; }
+  .badge.red { background: var(--accent2-light); color: var(--accent2); border-color: #e8c8b8; }
+
+  /* ── LAYOUT ── */
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  /* ── ALERT BOX ── */
+  .alert {
+    margin: 40px 0 0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .alert.warn {
+    background: var(--warn-light);
+    border: 1px solid #f0d8a8;
+  }
+  .alert.info {
+    background: var(--info-light);
+    border: 1px solid #bed3e8;
+  }
+  .alert-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .alert-body { flex: 1; }
+  .alert-title {
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    color: var(--warn);
+  }
+  .alert.info .alert-title { color: var(--info); }
+  .alert-body p { font-size: 15px; color: var(--text); line-height: 1.6; }
+
+  /* ── DELIVERABLES ── */
+  .deliverables {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .deliverables-header {
+    background: var(--accent);
+    color: #fff;
+    padding: 18px 28px;
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .del-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .del-item {
+    padding: 22px 24px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .del-item:nth-child(3n) { border-right: none; }
+  .del-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .del-label { font-weight: 500; font-size: 15px; color: var(--text); margin-bottom: 4px; }
+  .del-format {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-top: 52px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-num {
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--text);
+  }
+  .section-title em { color: var(--accent); font-style: italic; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 26px;
+    box-shadow: var(--shadow);
+  }
+  .card + .card { margin-top: 14px; }
+  .card h4 {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .card ul {
+    padding-left: 20px;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+  .card ul li { margin-bottom: 2px; }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: '☐';
+    font-size: 18px;
+    color: var(--text-faint);
+    flex-shrink: 0;
+    margin-top: -1px;
+  }
+  code.mono {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    color: var(--accent2);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    background: var(--surface2);
+    text-align: left;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+  .marks-total td { font-weight: 600; background: var(--accent-light); }
+
+  /* ── HINT / CALLOUT INLINE ── */
+  .hint {
+    background: var(--warn-light);
+    border-left: 3px solid #e0a030;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 18px;
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .hint.blue {
+    background: var(--info-light);
+    border-left-color: #4a80b8;
+  }
+  .hint.green {
+    background: var(--accent-light);
+    border-left-color: var(--accent);
+  }
+  .hint strong { color: var(--warn); }
+  .hint.blue strong { color: var(--info); }
+  .hint.green strong { color: var(--accent); }
+
+  /* ── OPTION CARDS ── */
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .option-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 14px;
+  }
+  .option-card .opt-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+  }
+  .option-card p { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+
+  /* ── PIPELINE DIAGRAM ── */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 24px 0;
+  }
+  .pipe-step {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    width: 260px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .pipe-step.highlight {
+    background: var(--accent-light);
+    border-color: #a0c4b4;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .pipe-arrow {
+    font-size: 20px;
+    color: var(--text-faint);
+    line-height: 1;
+    margin: 2px 0;
+  }
+
+  /* ── VIVA ── */
+  .viva-q {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: var(--text);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    line-height: 1.6;
+  }
+  .viva-q::before {
+    content: 'Q';
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: -1px;
+  }
+
+  /* ── SUBMISSION ── */
+  .submit-box {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-top: 52px;
+  }
+  .submit-box h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    margin-bottom: 20px;
+  }
+  .submit-box ul {
+    padding-left: 20px;
+    font-size: 15px;
+    line-height: 1.9;
+    opacity: 0.92;
+  }
+  .submit-box .sub-note {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.25);
+    font-size: 14px;
+    opacity: 0.8;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 14px;
+    color: var(--text-faint);
+    border-top: 1px solid var(--border);
+  }
+  .footer strong { color: var(--text-muted); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .del-grid { grid-template-columns: 1fr; }
+    .del-item { border-right: none; }
+    .del-item:nth-child(3n) { border-right: none; }
+    .hero { padding: 44px 20px 40px; }
+    .submit-box { padding: 28px 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">ML PROJECT &nbsp;·&nbsp; INDIVIDUAL ASSIGNMENT &nbsp;·&nbsp; RNN-BASED SPAM CLASSIFICATION</div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-icon">📧</span>
+  <h1>Spam / Not-Spam Classification<br>Using <em>Recurrent Neural Networks</em></h1>
+  <p class="hero-sub">Machine Learning Project &nbsp;—&nbsp; Individual Assignment</p>
+  <div class="hero-badges">
+    <span class="badge green">Deep Learning</span>
+    <span class="badge green">NLP</span>
+    <span class="badge">Jupyter Notebook</span>
+    <span class="badge">SMS Spam Dataset</span>
+    <span class="badge red">Individual Work Only</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ACADEMIC INTEGRITY -->
+  <div class="alert warn">
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-body">
+      <div class="alert-title">Academic Integrity Notice</div>
+      <p>This is an <strong>individual project</strong>. You are expected to write, understand, and explain every single line of code yourself. Your instructor <strong>will conduct a viva (oral examination)</strong> based on your submitted notebook. Copying code without understanding it will be immediately evident during the viva.</p>
+    </div>
+  </div>
+
+  <!-- DELIVERABLES -->
+  <div class="deliverables">
+    <div class="deliverables-header">📁 &nbsp;Deliverables</div>
+    <div class="del-grid">
+      <div class="del-item">
+        <div class="del-num">01</div>
+        <div class="del-label">Jupyter Notebook</div>
+        <span class="del-format">.ipynb</span>
+      </div>
+      <div class="del-item">
+        <div class="del-num">02</div>
+        <div class="del-label">Saved Trained Model</div>
+        <span class="del-format">.h5 / .keras / .pt</span>
+      </div>
+      <div class="del-item">
+        <div class="del-num">03</div>
+        <div class="del-label">Architecture Diagram</div>
+        <span class="del-format">.docx (Word File)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: DATASET -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-title"><em>Dataset</em></div>
+    </div>
+    <div class="card">
+      <h4>📂 SMS Spam Collection Dataset</h4>
+      <p>Use the <a href="https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset" target="_blank" style="color: var(--accent); font-weight: 500;">SMS Spam Collection Dataset</a> from Kaggle (originally from the UCI ML Repository).</p>
+      <ul style="margin-top: 12px;">
+        <li><strong>File:</strong> <code class="mono">spam.csv</code></li>
+        <li><strong>Records:</strong> ~5,572 messages</li>
+        <li><strong>Columns:</strong> <code class="mono">v1</code> (label: <code class="mono">spam</code> / <code class="mono">ham</code>) and <code class="mono">v2</code> (message text)</li>
+      </ul>
+    </div>
+    <div class="hint blue">
+      <strong>💡 Note:</strong> Download the dataset and place it in the same directory as your notebook. Load it using <code class="mono">pandas</code>. Do <strong>not</strong> hardcode absolute file paths.
+    </div>
+  </div>
+
+  <!-- SECTION 2: DATA CLEANING -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-title">Data Cleaning &amp; <em>Preprocessing</em></div>
+    </div>
+    <div class="card">
+      <h4>🧹 Required Cleaning Steps</h4>
+      <p>Your notebook must include a dedicated <strong>Data Cleaning</strong> section addressing at minimum:</p>
+      <ul style="margin-top: 10px;">
+        <li><strong>Unnamed / extra columns</strong> — identify and remove filler columns</li>
+        <li><strong>Duplicate entries</strong> — check for and handle duplicate rows</li>
+        <li><strong>Null / missing values</strong> — inspect and decide on a strategy</li>
+        <li><strong>Label encoding</strong> — convert <code class="mono">spam</code>/<code class="mono">ham</code> to numeric format</li>
+        <li><strong>Class imbalance</strong> — acknowledge it; optionally handle via oversampling, undersampling, or class weights</li>
+      </ul>
+    </div>
+    <div class="card" style="margin-top: 14px;">
+      <h4>⚙️ Text Preprocessing (Your Choice — Justify Everything)</h4>
+      <p>Consider exploring these steps. For each one, explain in a markdown cell why you chose to include or exclude it:</p>
+      <ul style="margin-top: 10px;">
+        <li>Lowercasing</li>
+        <li>Removing punctuation, special characters, or numbers</li>
+        <li>Stopword removal</li>
+        <li>Stemming vs. Lemmatization</li>
+        <li>Handling HTML tags or URLs</li>
+      </ul>
+    </div>
+    <div class="hint">
+      <strong>📝 Instruction:</strong> Every preprocessing decision must have a markdown explanation. Do not just run code — explain the <em>reasoning</em>.
+    </div>
+  </div>
+
+  <!-- SECTION 3: EDA + XAI -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div class="section-title">EDA + <em>Explainable AI</em></div>
+    </div>
+
+    <div class="card">
+      <h4>📊 Part A — Exploratory Data Analysis</h4>
+      <p>Produce <strong>at minimum</strong> the following visualisations (additional plots are encouraged). Write a <strong>1–3 sentence interpretation</strong> for each plot.</p>
+      <ul style="margin-top: 10px;">
+        <li>Class distribution (spam vs. ham count)</li>
+        <li>Message length distribution (by character or word count), separated by class</li>
+        <li>Word frequency analysis — word cloud or bar chart for spam vs. ham</li>
+        <li>Any other patterns you find interesting</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top: 14px;">
+      <h4>🔬 Part B — Explainable AI (XAI)</h4>
+      <p>After training your model, implement <strong>at least one XAI technique</strong>:</p>
+      <div class="option-grid" style="margin-top: 14px;">
+        <div class="option-card">
+          <div class="opt-title">LIME</div>
+          <p>Explains individual predictions by approximating the model locally with an interpretable model.</p>
+        </div>
+        <div class="option-card">
+          <div class="opt-title">SHAP</div>
+          <p>Assigns contribution scores to each feature/word for a given prediction.</p>
+        </div>
+        <div class="option-card">
+          <div class="opt-title">Attention Viz</div>
+          <p>If using an attention-based RNN, visualise which words the model "attended to".</p>
+        </div>
+        <div class="option-card">
+          <div class="opt-title">Saliency</div>
+          <p>Gradient-based methods that highlight which input tokens most influenced the output.</p>
+        </div>
+      </div>
+    </div>
+    <div class="hint green">
+      <strong>Research Requirement:</strong> Write a short paragraph explaining what your chosen XAI method does and why you chose it. Do not just run the library — demonstrate that you understand it.
+    </div>
+  </div>
+
+  <!-- SECTION 4: DATA TRANSFORMATION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div class="section-title">Data <em>Transformation</em></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>Sequence length analysis</strong> — examine message length distribution to decide on <code class="mono">maxlen</code></li>
+        <li><strong>Padding &amp; truncation</strong> — pad/truncate sequences to your chosen <code class="mono">maxlen</code>; justify the value</li>
+        <li><strong>Label formatting</strong> — ensure labels are the correct shape and data type for your loss function</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 5: TRAIN-TEST SPLIT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">05</div>
+      <div class="section-title">Train-Test <em>Split</em></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li>Split <strong>before</strong> vectorization/tokenization to prevent data leakage</li>
+        <li>Use a standard ratio (e.g., 80/20 or 70/30) — justify your choice</li>
+        <li>Set a <strong>random seed</strong> for reproducibility; use the same seed throughout</li>
+        <li>Consider a <strong>stratified split</strong> given class imbalance</li>
+        <li>Include a validation split during training (via <code class="mono">model.fit()</code> or a second split)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 6: VECTORIZATION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">06</div>
+      <div class="section-title">Vectorization / <em>Text Representation</em></div>
+    </div>
+    <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 16px;">Choose <strong>one</strong> of the following approaches and implement it fully:</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Keras Tokenizer</strong></td><td>Integer index–based tokenization with an embedding layer inside the model</td></tr>
+          <tr><td><strong>Pre-trained Embeddings</strong></td><td>GloVe or FastText embeddings as a fixed or trainable embedding layer</td></tr>
+          <tr><td><strong>Character-level Encoding</strong></td><td>Encode individual characters instead of words</td></tr>
+          <tr><td><strong>Subword Tokenization</strong></td><td>BPE or WordPiece (e.g., via HuggingFace tokenizers)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="hint">
+      <strong>⚠️ Leakage Warning:</strong> If you use a vocabulary-based tokenizer, it must be <strong>fit only on the training set</strong>, then applied to both train and test sets.
+    </div>
+    <div class="hint blue" style="margin-top: 10px;">
+      <strong>📝 In a markdown cell, clearly explain:</strong> (1) what method you chose, (2) how it works, and (3) why it is appropriate for this task.
+    </div>
+  </div>
+
+  <!-- SECTION 7: MODEL ARCHITECTURE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">07</div>
+      <div class="section-title">Model <em>Architecture</em></div>
+    </div>
+    <div class="card">
+      <h4>✅ Required Constraints</h4>
+      <ul>
+        <li>At least one recurrent layer: <code class="mono">SimpleRNN</code>, <code class="mono">LSTM</code>, <code class="mono">GRU</code>, or <code class="mono">Bidirectional</code> wrapper</li>
+        <li>An <strong>Embedding layer</strong> as the first layer (unless using pre-computed embeddings)</li>
+        <li>A final <strong>output layer</strong> appropriate for binary classification</li>
+      </ul>
+    </div>
+    <div class="card" style="margin-top: 14px;">
+      <h4>🎛️ Your Design Choices — Explain Each in Markdown</h4>
+      <ul>
+        <li>Number of recurrent layers and units per layer</li>
+        <li>Whether to use dropout (and if so, at what rate)</li>
+        <li>Activation functions</li>
+        <li>Choice of optimizer and learning rate</li>
+        <li>Choice of loss function and why it is appropriate</li>
+        <li>Batch size and number of epochs</li>
+        <li>Any regularization strategy</li>
+      </ul>
+    </div>
+    <div class="hint green">
+      <strong>During training, you must record and plot:</strong> training and validation <em>loss</em> over epochs, and training and validation <em>accuracy</em> over epochs. Monitor for overfitting and show you addressed it.
+    </div>
+
+    <!-- Pipeline diagram -->
+    <div style="margin-top: 28px;">
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 14px; text-align: center; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;">Required Architecture Flow</p>
+      <div class="pipeline">
+        <div class="pipe-step">Raw Email Text</div>
+        <div class="pipe-arrow">↓</div>
+        <div class="pipe-step">Preprocessing</div>
+        <div class="pipe-arrow">↓</div>
+        <div class="pipe-step">Tokenization / Vectorization</div>
+        <div class="pipe-arrow">↓</div>
+        <div class="pipe-step highlight">Embedding Layer</div>
+        <div class="pipe-arrow">↓</div>
+        <div class="pipe-step highlight">RNN Layer(s)</div>
+        <div class="pipe-arrow">↓</div>
+        <div class="pipe-step">Dense / Output Layer</div>
+        <div class="pipe-arrow">↓</div>
+        <div class="pipe-step">Sigmoid Activation</div>
+        <div class="pipe-arrow">↓</div>
+        <div class="pipe-step" style="background: var(--accent); color: #fff; border-color: var(--accent);">Prediction (Spam / Not Spam)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8: SAVING THE MODEL -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">08</div>
+      <div class="section-title">Saving <em>the Model</em></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li>Save the trained model using your framework's standard method (e.g., <code class="mono">model.save()</code>, <code class="mono">torch.save()</code>)</li>
+        <li>Save the tokenizer separately (e.g., via <code class="mono">pickle</code> or <code class="mono">json</code>) — needed for inference</li>
+        <li>Use descriptive filenames, e.g. <code class="mono">spam_rnn_model.keras</code>, <code class="mono">tokenizer.pkl</code></li>
+        <li>Include a markdown cell listing all saved files and what each contains</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 9: INFERENCE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">09</div>
+      <div class="section-title">Inference / <em>Testing Without Retraining</em></div>
+    </div>
+    <div class="alert info">
+      <span class="alert-icon">✅</span>
+      <div class="alert-body">
+        <div class="alert-title">Grader Note</div>
+        <p>The grader will test your model by running <strong>only</strong> this section. Make sure it works cleanly from a fresh kernel state.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 16px;">
+      <h4>This section must be fully self-contained and include:</h4>
+      <ul style="margin-top: 10px;">
+        <li>Load the model from disk</li>
+        <li>Load the tokenizer/vectorizer from disk</li>
+        <li>A <code class="mono">predict_email(text)</code> function that:
+          <ul style="margin-top: 6px; padding-left: 20px;">
+            <li>Accepts a raw email/message string as input</li>
+            <li>Applies the same preprocessing and vectorization used during training</li>
+            <li>Returns <code class="mono">"SPAM"</code> or <code class="mono">"NOT SPAM"</code> with a confidence score</li>
+          </ul>
+        </li>
+        <li><strong>At least 5 test examples</strong> — mix of obvious spam, subtle spam, and legitimate messages</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 10: ARCHITECTURE DIAGRAM -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <div class="section-title">Architecture <em>Diagram</em> (Word File)</div>
+    </div>
+    <div class="card">
+      <p>Submit a separate <strong>.docx Word document</strong> with a clear, well-labelled diagram of your full model pipeline — from raw input to prediction output.</p>
+      <p style="margin-top: 12px;">The diagram must show the pipeline flow and include:</p>
+      <ul style="margin-top: 10px;">
+        <li>Number of units at each layer</li>
+        <li>Activation functions</li>
+        <li>Dropout rates (if any)</li>
+      </ul>
+      <p style="margin-top: 12px; color: var(--text-muted); font-size: 14px;">You may draw by hand and scan, use PowerPoint, draw.io, or any other tool — it must be readable and clearly labelled.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 11: EVALUATION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">11</div>
+      <div class="section-title">Evaluation <em>Metrics</em></div>
+    </div>
+    <div class="card">
+      <p>Accuracy alone is <strong>insufficient</strong> given class imbalance. You must report:</p>
+      <ul style="margin-top: 10px;">
+        <li>Confusion Matrix (visualised as a heatmap)</li>
+        <li>Precision, Recall, and F1-Score (per class)</li>
+        <li>ROC Curve and AUC Score</li>
+        <li>A <strong>written analysis (3–5 sentences)</strong> — what do the numbers tell you? Where is your model making mistakes?</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 12: NOTEBOOK STRUCTURE CHECKLIST -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">12</div>
+      <div class="section-title">Notebook <em>Structure Checklist</em></div>
+    </div>
+    <div class="card">
+      <p style="margin-bottom: 16px; font-size: 14px; color: var(--text-muted);">Your <code class="mono">.ipynb</code> file must follow this section order with clear markdown headers:</p>
+      <ul class="checklist">
+        <li><code class="mono">## 1. Imports &amp; Setup</code></li>
+        <li><code class="mono">## 2. Dataset Loading</code></li>
+        <li><code class="mono">## 3. Data Cleaning</code></li>
+        <li><code class="mono">## 4. Exploratory Data Analysis (EDA)</code></li>
+        <li><code class="mono">## 5. Explainable AI (XAI) — Pre or Post Training</code></li>
+        <li><code class="mono">## 6. Preprocessing</code></li>
+        <li><code class="mono">## 7. Data Transformation &amp; Padding</code></li>
+        <li><code class="mono">## 8. Train-Test Split</code></li>
+        <li><code class="mono">## 9. Vectorization / Tokenization</code></li>
+        <li><code class="mono">## 10. Model Architecture</code></li>
+        <li><code class="mono">## 11. Model Training</code></li>
+        <li><code class="mono">## 12. Evaluation &amp; Metrics</code></li>
+        <li><code class="mono">## 13. Saving the Model</code></li>
+        <li><code class="mono">## 14. Model Inference (Load &amp; Predict)</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 13: GRADING RUBRIC -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">13</div>
+      <div class="section-title">Grading <em>Rubric</em></div>
+    </div>
+    <div class="table-wrap card" style="padding: 0; overflow: hidden;">
+      <table>
+        <thead>
+          <tr><th>Component</th><th style="text-align:right;">Marks</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Data Cleaning &amp; Preprocessing (with justification)</td><td style="text-align:right;">10</td></tr>
+          <tr><td>EDA (quality of visualisations + interpretations)</td><td style="text-align:right;">10</td></tr>
+          <tr><td>Explainable AI (correct implementation + explanation)</td><td style="text-align:right;">15</td></tr>
+          <tr><td>Model Architecture (design + markdown justification)</td><td style="text-align:right;">15</td></tr>
+          <tr><td>Training (curves, overfitting awareness)</td><td style="text-align:right;">10</td></tr>
+          <tr><td>Evaluation Metrics (correctness + analysis)</td><td style="text-align:right;">10</td></tr>
+          <tr><td>Inference Section (works from cold start)</td><td style="text-align:right;">10</td></tr>
+          <tr><td>Code Quality (comments, structure, reproducibility)</td><td style="text-align:right;">10</td></tr>
+          <tr><td>Architecture Diagram (Word file)</td><td style="text-align:right;">5</td></tr>
+          <tr><td>Viva Performance</td><td style="text-align:right;">15</td></tr>
+          <tr class="marks-total"><td><strong>Total</strong></td><td style="text-align:right;"><strong>100</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION 14: VIVA -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">14</div>
+      <div class="section-title">Viva <em>Preparation</em></div>
+    </div>
+    <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 18px;">Your instructor will conduct an oral examination based on your submitted code. Be prepared to answer questions such as:</p>
+    <div class="viva-q">Why did you choose LSTM over SimpleRNN (or vice versa)?</div>
+    <div class="viva-q">What is the vanishing gradient problem and how does it relate to your architecture choice?</div>
+    <div class="viva-q">What does your embedding layer learn?</div>
+    <div class="viva-q">Why did you pad sequences and what value did you use for padding?</div>
+    <div class="viva-q">Walk me through the forward pass of your model for a single input.</div>
+    <div class="viva-q">Why did you choose your specific loss function?</div>
+    <div class="viva-q">What does your confusion matrix tell you about false positives vs. false negatives in spam detection?</div>
+    <div class="viva-q">What XAI method did you use and what did it reveal about your model?</div>
+    <div class="viva-q">If you were to improve this model, what would you do first and why?</div>
+    <div class="viva-q">What is overfitting and how did you detect / prevent it in your model?</div>
+    <div class="hint warn" style="margin-top: 16px; background: var(--warn-light); border-left-color: #e0a030;">
+      <strong>⚠️</strong> You are expected to answer questions about <strong>every line of code</strong> in your notebook. Write code you genuinely understand.
+    </div>
+  </div>
+
+  <!-- SECTION 15: SUGGESTED LIBRARIES -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">15</div>
+      <div class="section-title">Suggested <em>Libraries</em></div>
+    </div>
+    <div class="option-grid">
+      <div class="option-card">
+        <div class="opt-title">Deep Learning</div>
+        <p><code class="mono">tensorflow/keras</code> or <code class="mono">pytorch</code></p>
+      </div>
+      <div class="option-card">
+        <div class="opt-title">NLP / Text</div>
+        <p><code class="mono">nltk</code>, <code class="mono">spacy</code>, <code class="mono">re</code></p>
+      </div>
+      <div class="option-card">
+        <div class="opt-title">Vectorization</div>
+        <p><code class="mono">keras.preprocessing</code>, <code class="mono">gensim</code></p>
+      </div>
+      <div class="option-card">
+        <div class="opt-title">Visualisation</div>
+        <p><code class="mono">matplotlib</code>, <code class="mono">seaborn</code>, <code class="mono">wordcloud</code></p>
+      </div>
+      <div class="option-card">
+        <div class="opt-title">XAI</div>
+        <p><code class="mono">lime</code>, <code class="mono">shap</code></p>
+      </div>
+      <div class="option-card">
+        <div class="opt-title">Evaluation &amp; Persistence</div>
+        <p><code class="mono">sklearn.metrics</code>, <code class="mono">pickle</code>, <code class="mono">joblib</code></p>
+      </div>
+    </div>
+    <p style="color: var(--text-faint); font-size: 13px; margin-top: 12px;">These are suggestions only — you are free to use any Python ML library.</p>
+  </div>
+
+  <!-- SUBMISSION BOX -->
+  <div class="submit-box">
+    <h3>📦 Submission Guidelines</h3>
+    <ul>
+      <li>Submit a ZIP file named <strong>YourNameInClassroom_SpamClassification.zip</strong></li>
+      <li>The ZIP must contain: <strong>.ipynb</strong> notebook, saved model file(s), tokenizer file(s), and an architecture <strong>.docx</strong></li>
+      <li>Ensure the notebook runs <strong>top-to-bottom without errors</strong> on a clean kernel before submission</li>
+      <li>Do <strong>not</strong> include the dataset in your submission — the grader has it</li>
+    </ul>
+    <div class="sub-note">
+      Good luck. <em>Write code you can defend.</em>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Machine Learning Project &nbsp;·&nbsp; RNN-Based Spam Classification &nbsp;·&nbsp; Individual Assignment<br>
+  <strong>SMS Spam Collection Dataset</strong> — UCI Machine Learning Repository / Kaggle
+</div>
+
+</body>
+</html>
