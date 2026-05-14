@@ -28,6 +28,42 @@
     --tag-text: #2d4a3e;
     --code-bg: #f0ede4;
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  [data-theme="dark"] {
+    --bg: #13110e;
+    --surface: #1c1916;
+    --surface2: #242118;
+    --border: #33302a;
+    --text: #f0ede4;
+    --text-muted: #9e9b95;
+    --text-faint: #5a5750;
+    --accent: #5a9e7e;
+    --accent-light: #1a2e26;
+    --accent2: #d4855a;
+    --accent2-light: #2a1a10;
+    --warn: #d4a855;
+    --warn-light: #231b0a;
+    --info: #5a9abf;
+    --info-light: #0a1a26;
+    --code-bg: #242118;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* ── SCROLL PROGRESS BAR ── */
+  #scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    z-index: 9999;
+    transition: width 0.1s linear;
+    border-radius: 0 2px 2px 0;
   }
 
   body {
@@ -37,6 +73,7 @@
     font-size: 16px;
     line-height: 1.7;
     min-height: 100vh;
+    transition: background var(--transition), color var(--transition);
   }
 
   /* ── TOP BAR ── */
@@ -48,7 +85,82 @@
     font-size: 13px;
     letter-spacing: 0.06em;
     font-weight: 500;
+    position: relative;
   }
+
+  /* ── DARK MODE TOGGLE ── */
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: var(--shadow);
+    transition: all var(--transition);
+    user-select: none;
+  }
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+  }
+  .theme-toggle .toggle-icon { font-size: 16px; transition: transform 0.4s; }
+  .theme-toggle:hover .toggle-icon { transform: rotate(20deg); }
+
+  /* ── FLOATING SECTION NAV ── */
+  .section-nav {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .nav-dot::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    box-shadow: var(--shadow);
+  }
+  .nav-dot:hover::after { opacity: 1; }
+  .nav-dot:hover { background: var(--accent); transform: scale(1.4); }
+  .nav-dot.active { background: var(--accent); transform: scale(1.3); }
 
   /* ── HERO ── */
   .hero {
@@ -56,12 +168,18 @@
     border-bottom: 1px solid var(--border);
     padding: 64px 24px 56px;
     text-align: center;
+    transition: background var(--transition);
   }
   .hero-icon {
     font-size: 52px;
     line-height: 1;
     margin-bottom: 20px;
     display: block;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
   }
   .hero h1 {
     font-family: 'DM Serif Display', serif;
@@ -71,10 +189,7 @@
     line-height: 1.15;
     margin-bottom: 14px;
   }
-  .hero h1 em {
-    color: var(--accent);
-    font-style: italic;
-  }
+  .hero h1 em { color: var(--accent); font-style: italic; }
   .hero-sub {
     color: var(--text-muted);
     font-size: 18px;
@@ -96,15 +211,106 @@
     padding: 5px 14px;
     border-radius: 100px;
     letter-spacing: 0.03em;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
+  .badge:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
   .badge.green { background: var(--accent-light); color: var(--accent); border-color: #c2d8cc; }
   .badge.red { background: var(--accent2-light); color: var(--accent2); border-color: #e8c8b8; }
+
+  /* ── COUNTDOWN ── */
+  .countdown-strip {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+  .cd-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 32px;
+  }
+  .cd-block-viva .cd-block-label { color: var(--accent2); }
+  .cd-block-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .cd-block-date {
+    font-size: 12px;
+    color: var(--text-faint);
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+  .cd-divider {
+    width: 1px;
+    height: 68px;
+    background: var(--border);
+    margin: 0 8px;
+    flex-shrink: 0;
+  }
+  .countdown-units {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .cd-unit {
+    text-align: center;
+    min-width: 40px;
+  }
+  .cd-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    display: block;
+    transition: transform 0.15s;
+  }
+  .cd-num-viva { color: var(--accent2); }
+  .cd-num.tick { transform: scale(1.2); }
+  .cd-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+    margin-top: 2px;
+    display: block;
+  }
+  .cd-sep {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    color: var(--text-faint);
+    margin-bottom: 14px;
+  }
+  .cd-expired { font-weight: 600; font-size: 13px; padding: 4px 12px; border-radius: 6px; }
+  .cd-expired.sub { color: var(--accent2); background: var(--accent2-light); }
+  .cd-expired.viva { color: var(--info); background: var(--info-light); }
 
   /* ── LAYOUT ── */
   .page {
     max-width: 860px;
     margin: 0 auto;
     padding: 0 20px 80px;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   /* ── ALERT BOX ── */
@@ -115,15 +321,10 @@
     display: flex;
     gap: 16px;
     align-items: flex-start;
+    transition: background var(--transition);
   }
-  .alert.warn {
-    background: var(--warn-light);
-    border: 1px solid #f0d8a8;
-  }
-  .alert.info {
-    background: var(--info-light);
-    border: 1px solid #bed3e8;
-  }
+  .alert.warn { background: var(--warn-light); border: 1px solid #f0d8a8; }
+  .alert.info { background: var(--info-light); border: 1px solid #bed3e8; }
   .alert-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
   .alert-body { flex: 1; }
   .alert-title {
@@ -145,7 +346,9 @@
     border-radius: 16px;
     overflow: hidden;
     box-shadow: var(--shadow);
+    transition: background var(--transition), transform 0.2s, box-shadow 0.2s;
   }
+  .deliverables:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
   .deliverables-header {
     background: var(--accent);
     color: #fff;
@@ -157,16 +360,14 @@
     align-items: center;
     gap: 10px;
   }
-  .del-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-  }
+  .del-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
   .del-item {
     padding: 22px 24px;
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
   }
+  .del-item:hover { background: var(--accent-light); }
   .del-item:nth-child(3n) { border-right: none; }
   .del-num {
     font-family: 'DM Mono', monospace;
@@ -188,9 +389,7 @@
   }
 
   /* ── SECTION ── */
-  .section {
-    margin-top: 52px;
-  }
+  .section { margin-top: 52px; }
   .section-header {
     display: flex;
     align-items: center;
@@ -212,7 +411,9 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
+  .section-header:hover .section-num { transform: rotate(-5deg) scale(1.1); box-shadow: 0 4px 12px rgba(45,74,62,0.3); }
   .section-title {
     font-family: 'DM Serif Display', serif;
     font-size: 24px;
@@ -228,7 +429,9 @@
     border-radius: 12px;
     padding: 22px 26px;
     box-shadow: var(--shadow);
+    transition: background var(--transition), transform 0.2s, box-shadow 0.2s;
   }
+  .card:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
   .card + .card { margin-top: 14px; }
   .card h4 {
     font-weight: 600;
@@ -248,11 +451,8 @@
   }
   .card ul li { margin-bottom: 2px; }
 
-  /* ── CHECKLIST ── */
-  .checklist {
-    list-style: none;
-    padding: 0;
-  }
+  /* ── INTERACTIVE CHECKLIST ── */
+  .checklist { list-style: none; padding: 0; }
   .checklist li {
     display: flex;
     align-items: flex-start;
@@ -261,15 +461,54 @@
     border-bottom: 1px solid var(--border);
     font-size: 15px;
     line-height: 1.55;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    user-select: none;
   }
   .checklist li:last-child { border-bottom: none; }
-  .checklist li::before {
-    content: '☐';
-    font-size: 18px;
-    color: var(--text-faint);
+  .checklist li.done { opacity: 0.5; text-decoration: line-through; }
+  .checklist-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
     flex-shrink: 0;
-    margin-top: -1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.2s;
+    font-size: 12px;
+    color: transparent;
+    background: var(--surface);
   }
+  .checklist li.done .checklist-box {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .checklist-hint {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .checklist-progress {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+  .checklist-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #5a9e7e);
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+  }
+
+  /* ── CODE COPY ── */
   code.mono {
     font-family: 'DM Mono', monospace;
     font-size: 13px;
@@ -278,15 +517,44 @@
     padding: 2px 7px;
     border-radius: 4px;
     border: 1px solid var(--border);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    display: inline-block;
   }
+  code.mono:hover {
+    background: var(--accent2-light);
+    border-color: var(--accent2);
+  }
+  code.mono::after {
+    content: '📋';
+    font-size: 10px;
+    margin-left: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  code.mono:hover::after { opacity: 1; }
+  .copy-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 20px;
+    border-radius: 100px;
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   /* ── TABLE ── */
   .table-wrap { overflow-x: auto; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
   th {
     background: var(--surface2);
     text-align: left;
@@ -304,12 +572,13 @@
     vertical-align: top;
     color: var(--text);
     line-height: 1.55;
+    transition: background 0.15s;
   }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--bg); }
   .marks-total td { font-weight: 600; background: var(--accent-light); }
 
-  /* ── HINT / CALLOUT INLINE ── */
+  /* ── HINT / CALLOUT ── */
   .hint {
     background: var(--warn-light);
     border-left: 3px solid #e0a030;
@@ -319,15 +588,10 @@
     font-size: 14px;
     color: var(--text);
     line-height: 1.6;
+    transition: background var(--transition);
   }
-  .hint.blue {
-    background: var(--info-light);
-    border-left-color: #4a80b8;
-  }
-  .hint.green {
-    background: var(--accent-light);
-    border-left-color: var(--accent);
-  }
+  .hint.blue { background: var(--info-light); border-left-color: #4a80b8; }
+  .hint.green { background: var(--accent-light); border-left-color: var(--accent); }
   .hint strong { color: var(--warn); }
   .hint.blue strong { color: var(--info); }
   .hint.green strong { color: var(--accent); }
@@ -345,7 +609,10 @@
     border-radius: 10px;
     padding: 16px 18px;
     font-size: 14px;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    cursor: default;
   }
+  .option-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
   .option-card .opt-title {
     font-weight: 600;
     font-size: 14px;
@@ -355,7 +622,7 @@
   }
   .option-card p { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
 
-  /* ── PIPELINE DIAGRAM ── */
+  /* ── ANIMATED PIPELINE ── */
   .pipeline {
     display: flex;
     flex-direction: column;
@@ -374,19 +641,45 @@
     width: 260px;
     text-align: center;
     box-shadow: var(--shadow);
+    transition: all 0.3s;
+    position: relative;
   }
+  .pipe-step:hover { transform: scale(1.04); border-color: var(--accent); color: var(--accent); box-shadow: var(--shadow-lg); }
   .pipe-step.highlight {
     background: var(--accent-light);
     border-color: #a0c4b4;
     color: var(--accent);
     font-weight: 600;
   }
+  .pipe-step.highlight:hover { transform: scale(1.06); }
   .pipe-arrow {
     font-size: 20px;
     color: var(--text-faint);
     line-height: 1;
     margin: 2px 0;
+    animation: pulse-arrow 1.8s ease-in-out infinite;
   }
+  @keyframes pulse-arrow {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.3); }
+  }
+
+  /* ── MARKS DONUT CHART ── */
+  .rubric-wrapper {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: start;
+  }
+  .donut-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .donut-svg { width: 140px; height: 140px; }
+  .donut-label { font-size: 12px; color: var(--text-faint); text-align: center; font-weight: 500; letter-spacing: 0.04em; }
 
   /* ── VIVA ── */
   .viva-q {
@@ -401,7 +694,10 @@
     gap: 12px;
     align-items: flex-start;
     line-height: 1.6;
+    transition: all 0.2s;
+    cursor: pointer;
   }
+  .viva-q:hover { border-color: var(--accent); background: var(--accent-light); transform: translateX(4px); }
   .viva-q::before {
     content: 'Q';
     font-family: 'DM Serif Display', serif;
@@ -418,6 +714,30 @@
     border-radius: 16px;
     padding: 36px 40px;
     margin-top: 52px;
+    position: relative;
+    overflow: hidden;
+  }
+  .submit-box::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    pointer-events: none;
+  }
+  .submit-box::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -20px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
   }
   .submit-box h3 {
     font-family: 'DM Serif Display', serif;
@@ -449,18 +769,72 @@
   }
   .footer strong { color: var(--text-muted); }
 
+  /* ── BACK TO TOP ── */
+  #back-to-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 42px;
+    height: 42px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    z-index: 800;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  #back-to-top.visible { opacity: 1; transform: scale(1); pointer-events: all; }
+  #back-to-top:hover { transform: scale(1.1); box-shadow: 0 8px 24px rgba(45,74,62,0.35); }
+
   /* ── RESPONSIVE ── */
-  @media (max-width: 640px) {
+  @media (max-width: 720px) {
+    .section-nav { display: none; }
     .del-grid { grid-template-columns: 1fr; }
     .del-item { border-right: none; }
-    .del-item:nth-child(3n) { border-right: none; }
     .hero { padding: 44px 20px 40px; }
     .submit-box { padding: 28px 22px; }
+    .rubric-wrapper { grid-template-columns: 1fr; }
+    .donut-container { flex-direction: row; justify-content: flex-start; }
+    .theme-toggle { top: auto; bottom: 72px; right: 20px; }
   }
+
+  /* ── STAGGER ANIMATION DELAYS ── */
+  .stagger-1 { transition-delay: 0.05s; }
+  .stagger-2 { transition-delay: 0.10s; }
+  .stagger-3 { transition-delay: 0.15s; }
+  .stagger-4 { transition-delay: 0.20s; }
 </style>
 </head>
 <body>
 
+<!-- SCROLL PROGRESS -->
+<div id="scroll-progress"></div>
+
+<!-- COPY TOAST -->
+<div class="copy-toast" id="copy-toast">Copied to clipboard!</div>
+
+<!-- BACK TO TOP -->
+<button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
+
+<!-- DARK MODE TOGGLE -->
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+  <span class="toggle-icon" id="theme-icon">🌙</span>
+  <span id="theme-label">Dark</span>
+</button>
+
+<!-- FLOATING SECTION NAV -->
+<nav class="section-nav" id="section-nav" aria-label="Section navigation"></nav>
+
+<!-- TOP BAR -->
 <div class="topbar">ML PROJECT &nbsp;·&nbsp; INDIVIDUAL ASSIGNMENT &nbsp;·&nbsp; RNN-BASED SPAM CLASSIFICATION</div>
 
 <!-- HERO -->
@@ -477,10 +851,45 @@
   </div>
 </div>
 
+<!-- COUNTDOWN STRIP -->
+<div class="countdown-strip">
+  <!-- Submission Deadline -->
+  <div class="cd-block">
+    <div class="cd-block-label">📁 Submission Deadline</div>
+    <div class="cd-block-date">20 May 2026 · 9:00 PM</div>
+    <div class="countdown-units" id="countdown-units-sub">
+      <div class="cd-unit"><span class="cd-num" id="sub-days">--</span><span class="cd-label">Days</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="sub-hours">--</span><span class="cd-label">Hours</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="sub-mins">--</span><span class="cd-label">Mins</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="sub-secs">--</span><span class="cd-label">Secs</span></div>
+    </div>
+  </div>
+
+  <div class="cd-divider"></div>
+
+  <!-- Viva Date -->
+  <div class="cd-block cd-block-viva">
+    <div class="cd-block-label">🎤 Viva Examination</div>
+    <div class="cd-block-date">20 May 2026 · 9:30 PM</div>
+    <div class="countdown-units" id="countdown-units-viva">
+      <div class="cd-unit"><span class="cd-num cd-num-viva" id="viva-days">--</span><span class="cd-label">Days</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num cd-num-viva" id="viva-hours">--</span><span class="cd-label">Hours</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num cd-num-viva" id="viva-mins">--</span><span class="cd-label">Mins</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num cd-num-viva" id="viva-secs">--</span><span class="cd-label">Secs</span></div>
+    </div>
+  </div>
+</div>
+
 <div class="page">
 
   <!-- ACADEMIC INTEGRITY -->
-  <div class="alert warn">
+  <div class="alert warn reveal" data-section="Integrity">
     <span class="alert-icon">⚠️</span>
     <div class="alert-body">
       <div class="alert-title">Academic Integrity Notice</div>
@@ -489,7 +898,7 @@
   </div>
 
   <!-- DELIVERABLES -->
-  <div class="deliverables">
+  <div class="deliverables reveal" data-section="Deliverables">
     <div class="deliverables-header">📁 &nbsp;Deliverables</div>
     <div class="del-grid">
       <div class="del-item">
@@ -510,8 +919,8 @@
     </div>
   </div>
 
-  <!-- SECTION 1: DATASET -->
-  <div class="section">
+  <!-- SECTION 1 -->
+  <div class="section reveal" data-section="Dataset" id="sec-1">
     <div class="section-header">
       <div class="section-num">01</div>
       <div class="section-title"><em>Dataset</em></div>
@@ -530,8 +939,8 @@
     </div>
   </div>
 
-  <!-- SECTION 2: DATA CLEANING -->
-  <div class="section">
+  <!-- SECTION 2 -->
+  <div class="section reveal" data-section="Cleaning" id="sec-2">
     <div class="section-header">
       <div class="section-num">02</div>
       <div class="section-title">Data Cleaning &amp; <em>Preprocessing</em></div>
@@ -563,13 +972,12 @@
     </div>
   </div>
 
-  <!-- SECTION 3: EDA + XAI -->
-  <div class="section">
+  <!-- SECTION 3 -->
+  <div class="section reveal" data-section="EDA + XAI" id="sec-3">
     <div class="section-header">
       <div class="section-num">03</div>
       <div class="section-title">EDA + <em>Explainable AI</em></div>
     </div>
-
     <div class="card">
       <h4>📊 Part A — Exploratory Data Analysis</h4>
       <p>Produce <strong>at minimum</strong> the following visualisations (additional plots are encouraged). Write a <strong>1–3 sentence interpretation</strong> for each plot.</p>
@@ -580,7 +988,6 @@
         <li>Any other patterns you find interesting</li>
       </ul>
     </div>
-
     <div class="card" style="margin-top: 14px;">
       <h4>🔬 Part B — Explainable AI (XAI)</h4>
       <p>After training your model, implement <strong>at least one XAI technique</strong>:</p>
@@ -608,8 +1015,8 @@
     </div>
   </div>
 
-  <!-- SECTION 4: DATA TRANSFORMATION -->
-  <div class="section">
+  <!-- SECTION 4 -->
+  <div class="section reveal" data-section="Transform" id="sec-4">
     <div class="section-header">
       <div class="section-num">04</div>
       <div class="section-title">Data <em>Transformation</em></div>
@@ -623,8 +1030,8 @@
     </div>
   </div>
 
-  <!-- SECTION 5: TRAIN-TEST SPLIT -->
-  <div class="section">
+  <!-- SECTION 5 -->
+  <div class="section reveal" data-section="Train/Test" id="sec-5">
     <div class="section-header">
       <div class="section-num">05</div>
       <div class="section-title">Train-Test <em>Split</em></div>
@@ -640,8 +1047,8 @@
     </div>
   </div>
 
-  <!-- SECTION 6: VECTORIZATION -->
-  <div class="section">
+  <!-- SECTION 6 -->
+  <div class="section reveal" data-section="Vectorization" id="sec-6">
     <div class="section-header">
       <div class="section-num">06</div>
       <div class="section-title">Vectorization / <em>Text Representation</em></div>
@@ -649,9 +1056,7 @@
     <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 16px;">Choose <strong>one</strong> of the following approaches and implement it fully:</p>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr><th>Option</th><th>Description</th></tr>
-        </thead>
+        <thead><tr><th>Option</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><strong>Keras Tokenizer</strong></td><td>Integer index–based tokenization with an embedding layer inside the model</td></tr>
           <tr><td><strong>Pre-trained Embeddings</strong></td><td>GloVe or FastText embeddings as a fixed or trainable embedding layer</td></tr>
@@ -668,8 +1073,8 @@
     </div>
   </div>
 
-  <!-- SECTION 7: MODEL ARCHITECTURE -->
-  <div class="section">
+  <!-- SECTION 7 -->
+  <div class="section reveal" data-section="Architecture" id="sec-7">
     <div class="section-header">
       <div class="section-num">07</div>
       <div class="section-title">Model <em>Architecture</em></div>
@@ -697,8 +1102,6 @@
     <div class="hint green">
       <strong>During training, you must record and plot:</strong> training and validation <em>loss</em> over epochs, and training and validation <em>accuracy</em> over epochs. Monitor for overfitting and show you addressed it.
     </div>
-
-    <!-- Pipeline diagram -->
     <div style="margin-top: 28px;">
       <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 14px; text-align: center; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;">Required Architecture Flow</p>
       <div class="pipeline">
@@ -721,8 +1124,8 @@
     </div>
   </div>
 
-  <!-- SECTION 8: SAVING THE MODEL -->
-  <div class="section">
+  <!-- SECTION 8 -->
+  <div class="section reveal" data-section="Saving" id="sec-8">
     <div class="section-header">
       <div class="section-num">08</div>
       <div class="section-title">Saving <em>the Model</em></div>
@@ -737,8 +1140,8 @@
     </div>
   </div>
 
-  <!-- SECTION 9: INFERENCE -->
-  <div class="section">
+  <!-- SECTION 9 -->
+  <div class="section reveal" data-section="Inference" id="sec-9">
     <div class="section-header">
       <div class="section-num">09</div>
       <div class="section-title">Inference / <em>Testing Without Retraining</em></div>
@@ -767,8 +1170,8 @@
     </div>
   </div>
 
-  <!-- SECTION 10: ARCHITECTURE DIAGRAM -->
-  <div class="section">
+  <!-- SECTION 10 -->
+  <div class="section reveal" data-section="Diagram" id="sec-10">
     <div class="section-header">
       <div class="section-num">10</div>
       <div class="section-title">Architecture <em>Diagram</em> (Word File)</div>
@@ -785,8 +1188,8 @@
     </div>
   </div>
 
-  <!-- SECTION 11: EVALUATION -->
-  <div class="section">
+  <!-- SECTION 11 -->
+  <div class="section reveal" data-section="Evaluation" id="sec-11">
     <div class="section-header">
       <div class="section-num">11</div>
       <div class="section-title">Evaluation <em>Metrics</em></div>
@@ -802,44 +1205,45 @@
     </div>
   </div>
 
-  <!-- SECTION 12: NOTEBOOK STRUCTURE CHECKLIST -->
-  <div class="section">
+  <!-- SECTION 12: INTERACTIVE CHECKLIST -->
+  <div class="section reveal" data-section="Checklist" id="sec-12">
     <div class="section-header">
       <div class="section-num">12</div>
       <div class="section-title">Notebook <em>Structure Checklist</em></div>
     </div>
     <div class="card">
-      <p style="margin-bottom: 16px; font-size: 14px; color: var(--text-muted);">Your <code class="mono">.ipynb</code> file must follow this section order with clear markdown headers:</p>
-      <ul class="checklist">
-        <li><code class="mono">## 1. Imports &amp; Setup</code></li>
-        <li><code class="mono">## 2. Dataset Loading</code></li>
-        <li><code class="mono">## 3. Data Cleaning</code></li>
-        <li><code class="mono">## 4. Exploratory Data Analysis (EDA)</code></li>
-        <li><code class="mono">## 5. Explainable AI (XAI) — Pre or Post Training</code></li>
-        <li><code class="mono">## 6. Preprocessing</code></li>
-        <li><code class="mono">## 7. Data Transformation &amp; Padding</code></li>
-        <li><code class="mono">## 8. Train-Test Split</code></li>
-        <li><code class="mono">## 9. Vectorization / Tokenization</code></li>
-        <li><code class="mono">## 10. Model Architecture</code></li>
-        <li><code class="mono">## 11. Model Training</code></li>
-        <li><code class="mono">## 12. Evaluation &amp; Metrics</code></li>
-        <li><code class="mono">## 13. Saving the Model</code></li>
-        <li><code class="mono">## 14. Model Inference (Load &amp; Predict)</code></li>
+      <p style="margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Your <code class="mono">.ipynb</code> file must follow this section order with clear markdown headers:</p>
+      <p class="checklist-hint">Click each item to mark it done ✓</p>
+      <ul class="checklist" id="notebook-checklist">
+        <li><div class="checklist-box">✓</div><code class="mono">## 1. Imports &amp; Setup</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 2. Dataset Loading</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 3. Data Cleaning</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 4. Exploratory Data Analysis (EDA)</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 5. Explainable AI (XAI) — Pre or Post Training</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 6. Preprocessing</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 7. Data Transformation &amp; Padding</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 8. Train-Test Split</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 9. Vectorization / Tokenization</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 10. Model Architecture</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 11. Model Training</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 12. Evaluation &amp; Metrics</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 13. Saving the Model</code></li>
+        <li><div class="checklist-box">✓</div><code class="mono">## 14. Model Inference (Load &amp; Predict)</code></li>
       </ul>
+      <div class="checklist-progress"><div class="checklist-progress-bar" id="checklist-bar"></div></div>
+      <p style="font-size: 12px; color: var(--text-faint); margin-top: 8px;" id="checklist-count">0 / 14 completed</p>
     </div>
   </div>
 
-  <!-- SECTION 13: GRADING RUBRIC -->
-  <div class="section">
+  <!-- SECTION 13: RUBRIC WITH DONUT -->
+  <div class="section reveal" data-section="Rubric" id="sec-13">
     <div class="section-header">
       <div class="section-num">13</div>
       <div class="section-title">Grading <em>Rubric</em></div>
     </div>
-    <div class="table-wrap card" style="padding: 0; overflow: hidden;">
+    <div class="table-wrap card rubric-wrapper" style="padding: 0; overflow: hidden;">
       <table>
-        <thead>
-          <tr><th>Component</th><th style="text-align:right;">Marks</th></tr>
-        </thead>
+        <thead><tr><th>Component</th><th style="text-align:right;">Marks</th></tr></thead>
         <tbody>
           <tr><td>Data Cleaning &amp; Preprocessing (with justification)</td><td style="text-align:right;">10</td></tr>
           <tr><td>EDA (quality of visualisations + interpretations)</td><td style="text-align:right;">10</td></tr>
@@ -854,11 +1258,25 @@
           <tr class="marks-total"><td><strong>Total</strong></td><td style="text-align:right;"><strong>100</strong></td></tr>
         </tbody>
       </table>
+      <div class="donut-container" style="padding: 24px;">
+        <svg class="donut-svg" viewBox="0 0 100 100" id="donut-chart">
+          <!-- Background ring -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="var(--border)" stroke-width="10"/>
+          <!-- Segments will be injected by JS -->
+        </svg>
+        <div style="margin-top: 8px;">
+          <div style="display:flex;flex-direction:column;gap:5px;font-size:11px;">
+            <span style="display:flex;align-items:center;gap:6px;color:var(--text-muted)"><span style="width:10px;height:10px;border-radius:2px;background:#2d4a3e;flex-shrink:0"></span>Technical (70)</span>
+            <span style="display:flex;align-items:center;gap:6px;color:var(--text-muted)"><span style="width:10px;height:10px;border-radius:2px;background:#5a9e7e;flex-shrink:0"></span>Quality (15)</span>
+            <span style="display:flex;align-items:center;gap:6px;color:var(--text-muted)"><span style="width:10px;height:10px;border-radius:2px;background:#7c3f1e;flex-shrink:0"></span>Viva (15)</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- SECTION 14: VIVA -->
-  <div class="section">
+  <!-- SECTION 14 -->
+  <div class="section reveal" data-section="Viva" id="sec-14">
     <div class="section-header">
       <div class="section-num">14</div>
       <div class="section-title">Viva <em>Preparation</em></div>
@@ -879,8 +1297,8 @@
     </div>
   </div>
 
-  <!-- SECTION 15: SUGGESTED LIBRARIES -->
-  <div class="section">
+  <!-- SECTION 15 -->
+  <div class="section reveal" data-section="Libraries" id="sec-15">
     <div class="section-header">
       <div class="section-num">15</div>
       <div class="section-title">Suggested <em>Libraries</em></div>
@@ -915,7 +1333,7 @@
   </div>
 
   <!-- SUBMISSION BOX -->
-  <div class="submit-box">
+  <div class="submit-box reveal">
     <h3>📦 Submission Guidelines</h3>
     <ul>
       <li>Submit a ZIP file named <strong>YourNameInClassroom_SpamClassification.zip</strong></li>
@@ -934,6 +1352,177 @@
   Machine Learning Project &nbsp;·&nbsp; RNN-Based Spam Classification &nbsp;·&nbsp; Individual Assignment<br>
   <strong>SMS Spam Collection Dataset</strong> — UCI Machine Learning Repository / Kaggle
 </div>
+
+<script>
+// ── SCROLL PROGRESS BAR ──
+const progressBar = document.getElementById('scroll-progress');
+window.addEventListener('scroll', () => {
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = (window.scrollY / total * 100) + '%';
+});
+
+// ── DARK MODE TOGGLE ──
+const toggle = document.getElementById('theme-toggle');
+const icon = document.getElementById('theme-icon');
+const label = document.getElementById('theme-label');
+let dark = false;
+toggle.addEventListener('click', () => {
+  dark = !dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
+  icon.textContent = dark ? '☀️' : '🌙';
+  label.textContent = dark ? 'Light' : 'Dark';
+});
+
+// ── SCROLL REVEAL ──
+const reveals = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+reveals.forEach(r => revealObserver.observe(r));
+
+// ── SECTION NAV DOTS ──
+const sectionNav = document.getElementById('section-nav');
+const sections = document.querySelectorAll('[id^="sec-"]');
+sections.forEach((sec, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'nav-dot';
+  dot.dataset.label = sec.querySelector('.section-title')?.textContent?.replace(/\s+/g,' ').trim() || `Section ${i+1}`;
+  dot.addEventListener('click', () => sec.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  sectionNav.appendChild(dot);
+});
+const dots = document.querySelectorAll('.nav-dot');
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    const idx = Array.from(sections).indexOf(e.target);
+    if (idx >= 0 && e.isIntersecting) {
+      dots.forEach(d => d.classList.remove('active'));
+      dots[idx]?.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => sectionObserver.observe(s));
+
+// ── BACK TO TOP ──
+const btt = document.getElementById('back-to-top');
+window.addEventListener('scroll', () => {
+  btt.classList.toggle('visible', window.scrollY > 400);
+});
+btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+// ── CODE COPY ──
+const toast = document.getElementById('copy-toast');
+let toastTimer;
+document.querySelectorAll('code.mono').forEach(el => {
+  el.title = 'Click to copy';
+  el.addEventListener('click', () => {
+    navigator.clipboard.writeText(el.textContent.replace(/📋$/, '').trim()).catch(() => {});
+    clearTimeout(toastTimer);
+    toast.classList.add('show');
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  });
+});
+
+// ── INTERACTIVE CHECKLIST ──
+const checklist = document.getElementById('notebook-checklist');
+const bar = document.getElementById('checklist-bar');
+const countEl = document.getElementById('checklist-count');
+const items = checklist.querySelectorAll('li');
+const total = items.length;
+
+function updateProgress() {
+  const done = checklist.querySelectorAll('li.done').length;
+  bar.style.width = (done / total * 100) + '%';
+  countEl.textContent = `${done} / ${total} completed`;
+}
+
+items.forEach(li => {
+  li.addEventListener('click', () => {
+    li.classList.toggle('done');
+    updateProgress();
+  });
+});
+updateProgress();
+
+// ── DONUT CHART ──
+(function() {
+  const svg = document.getElementById('donut-chart');
+  const cx = 50, cy = 50, r = 38, strokeW = 10;
+  const circumference = 2 * Math.PI * r;
+  const segments = [
+    { pct: 70, color: '#2d4a3e' },
+    { pct: 15, color: '#5a9e7e' },
+    { pct: 15, color: '#7c3f1e' },
+  ];
+  let offset = 0;
+  segments.forEach(({ pct, color }) => {
+    const len = circumference * pct / 100;
+    const gap = circumference - len;
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', color);
+    circle.setAttribute('stroke-width', strokeW);
+    circle.setAttribute('stroke-dasharray', `${len} ${gap}`);
+    circle.setAttribute('stroke-dashoffset', circumference * 0.25 - offset);
+    circle.style.transition = 'stroke-dashoffset 0.6s ease';
+    svg.appendChild(circle);
+    offset += len;
+  });
+  // Center label
+  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', 50); text.setAttribute('y', 46);
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('font-size', '18');
+  text.setAttribute('font-weight', '600');
+  text.setAttribute('fill', 'currentColor');
+  text.textContent = '100';
+  const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  sub.setAttribute('x', 50); sub.setAttribute('y', 58);
+  sub.setAttribute('text-anchor', 'middle');
+  sub.setAttribute('font-size', '8');
+  sub.setAttribute('fill', '#9e9b95');
+  sub.textContent = 'marks total';
+  svg.appendChild(text); svg.appendChild(sub);
+})();
+
+// ── DUAL COUNTDOWN ──
+const subDeadline  = new Date('2026-05-20T21:00:00'); // Submission: May 20, 9:00 PM
+const vivaDeadline = new Date('2026-05-20T21:30:00'); // Viva:       May 20, 9:30 PM
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function updateTimer(deadline, ids, expiredId, expiredClass) {
+  const now  = new Date();
+  const diff = deadline - now;
+  const container = document.getElementById(expiredId);
+  if (diff <= 0) {
+    container.innerHTML = `<span class="cd-expired ${expiredClass}">✓ Passed</span>`;
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000)  / 60000);
+  const s = Math.floor((diff % 60000)    / 1000);
+  const sEl = document.getElementById(ids.secs);
+  const prev = sEl ? sEl.textContent : '';
+  document.getElementById(ids.days).textContent  = pad(d);
+  document.getElementById(ids.hours).textContent = pad(h);
+  document.getElementById(ids.mins).textContent  = pad(m);
+  if (sEl) {
+    sEl.textContent = pad(s);
+    if (prev !== pad(s)) { sEl.classList.add('tick'); setTimeout(() => sEl.classList.remove('tick'), 150); }
+  }
+}
+
+function tickAll() {
+  updateTimer(subDeadline,  { days:'sub-days',  hours:'sub-hours',  mins:'sub-mins',  secs:'sub-secs'  }, 'countdown-units-sub',  'sub');
+  updateTimer(vivaDeadline, { days:'viva-days', hours:'viva-hours', mins:'viva-mins', secs:'viva-secs' }, 'countdown-units-viva', 'viva');
+}
+tickAll();
+setInterval(tickAll, 1000);
+</script>
 
 </body>
 </html>
